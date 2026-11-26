@@ -1,0 +1,223 @@
+{
+ "res": 2,
+ "r": 30,
+ "stiffness": [
+  100000.0,
+  300000.0,
+  1000000.0,
+  3000000.0,
+  10000000.0
+ ],
+ "rows": [
+  {
+   "k": 100000.0,
+   "max_disp": {
+    "diag_load": 2.35405273555432,
+    "side_heavy": 2.3964237490696516,
+    "twist": 1.855456315532871
+   },
+   "basis": {
+    "modal": {
+     "errors": {
+      "diag_load": 0.977434496871279,
+      "side_heavy": 0.9799926703345472,
+      "twist": 0.835316731811565
+     },
+     "ms_per_frame": null
+    },
+    "modal+grav": {
+     "errors": {
+      "diag_load": 0.9775027999187303,
+      "side_heavy": 0.9800058190773124,
+      "twist": 0.8354171562131566
+     },
+     "ms_per_frame": null
+    },
+    "modal+MD": {
+     "errors": {
+      "diag_load": 0.7479681024871917,
+      "side_heavy": 0.6863815218555326,
+      "twist": 0.5995887617484208
+     },
+     "ms_per_frame": null
+    },
+    "pod": {
+     "errors": {
+      "diag_load": 0.4144561221389552,
+      "side_heavy": 0.4696929037740538,
+      "twist": 0.2944392571314591
+     },
+     "ms_per_frame": null
+    }
+   }
+  },
+  {
+   "k": 300000.0,
+   "max_disp": {
+    "diag_load": 1.5204522388407373,
+    "side_heavy": 1.8834969307427756,
+    "twist": 0.9092004832192552
+   },
+   "basis": {
+    "modal": {
+     "errors": {
+      "diag_load": 0.9842946603279676,
+      "side_heavy": 0.9860259057251091,
+      "twist": 0.7597838927696621
+     },
+     "ms_per_frame": null
+    },
+    "modal+grav": {
+     "errors": {
+      "diag_load": 0.9843307345765502,
+      "side_heavy": 0.9860495940642653,
+      "twist": 0.7598524649490349
+     },
+     "ms_per_frame": null
+    },
+    "modal+MD": {
+     "errors": {
+      "diag_load": 0.9023007619565451,
+      "side_heavy": 0.9386711980643442,
+      "twist": 0.04396639783788163
+     },
+     "ms_per_frame": null
+    },
+    "pod": {
+     "errors": {
+      "diag_load": 0.978343378166407,
+      "side_heavy": 0.9168922014619373,
+      "twist": 0.3242902238592179
+     },
+     "ms_per_frame": null
+    }
+   }
+  },
+  {
+   "k": 1000000.0,
+   "max_disp": {
+    "diag_load": 0.4996838532467082,
+    "side_heavy": 0.7658462363801256,
+    "twist": 0.3204883461729652
+   },
+   "basis": {
+    "modal": {
+     "errors": {
+      "diag_load": 0.8376337769199463,
+      "side_heavy": 0.98533894199444,
+      "twist": 0.6897625870912416
+     },
+     "ms_per_frame": null
+    },
+    "modal+grav": {
+     "errors": {
+      "diag_load": 0.837657992856129,
+      "side_heavy": 0.9853350699205123,
+      "twist": 0.6896819010189414
+     },
+     "ms_per_frame": null
+    },
+    "modal+MD": {
+     "errors": {
+      "diag_load": 0.0040301969929849865,
+      "side_heavy": 0.032041679259105275,
+      "twist": 0.009564931979341244
+     },
+     "ms_per_frame": null
+    },
+    "pod": {
+     "errors": {
+      "diag_load": 0.0045043809373635215,
+      "side_heavy": 0.015028245403831077,
+      "twist": 0.24948805996561055
+     },
+     "ms_per_frame": null
+    }
+   }
+  },
+  {
+   "k": 3000000.0,
+   "max_disp": {
+    "diag_load": 0.1696196263691902,
+    "side_heavy": 0.27159015750188525,
+    "twist": 0.10496320245656827
+   },
+   "basis": {
+    "modal": {
+     "errors": {
+      "diag_load": 1.2723545488879617,
+      "side_heavy": 0.9562658527199662,
+      "twist": 0.5780410493919138
+     },
+     "ms_per_frame": null
+    },
+    "modal+grav": {
+     "errors": {
+      "diag_load": 1.2724011197055969,
+      "side_heavy": 0.9561273182708278,
+      "twist": 0.5780751936766132
+     },
+     "ms_per_frame": null
+    },
+    "modal+MD": {
+     "errors": {
+      "diag_load": 0.0022510511238388784,
+      "side_heavy": 0.0033246040950830552,
+      "twist": 0.010444656354386019
+     },
+     "ms_per_frame": null
+    },
+    "pod": {
+     "errors": {
+      "diag_load": 0.0002264603906425233,
+      "side_heavy": 0.00038759284546120406,
+      "twist": 0.09036944820168351
+     },
+     "ms_per_frame": null
+    }
+   }
+  },
+  {
+   "k": 10000000.0,
+   "max_disp": {
+    "diag_load": 0.049767500176629176,
+    "side_heavy": 0.08060250114674873,
+    "twist": 0.029096045651212425
+   },
+   "basis": {
+    "modal": {
+     "errors": {
+      "diag_load": 0.3179089949755978,
+      "side_heavy": 0.4198412704940635,
+      "twist": 0.08857148089823526
+     },
+     "ms_per_frame": null
+    },
+    "modal+grav": {
+     "errors": {
+      "diag_load": 0.31784587301854694,
+      "side_heavy": 0.41983256171377975,
+      "twist": 0.08857655937305596
+     },
+     "ms_per_frame": null
+    },
+    "modal+MD": {
+     "errors": {
+      "diag_load": 0.0026770826030587686,
+      "side_heavy": 0.0026220036353722725,
+      "twist": 0.01104923872101446
+     },
+     "ms_per_frame": null
+    },
+    "pod": {
+     "errors": {
+      "diag_load": 0.00013070053479362695,
+      "side_heavy": 0.0002509669281673658,
+      "twist": 0.11060363409055796
+     },
+     "ms_per_frame": null
+    }
+   }
+  }
+ ]
+}

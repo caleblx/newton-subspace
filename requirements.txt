@@ -1,0 +1,7 @@
+newton==1.7.0
+warp-lang==1.18.0
+numpy>=2.0
+scipy>=1.13
+matplotlib>=3.9
+imageio-ffmpeg>=0.5
+usd-core>=24.0

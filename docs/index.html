@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reduced-Order Soft Bodies for Newton</title>
+<meta name="description" content="A reduced-order FEM solver for soft bodies in the Newton physics engine. 79,380 degrees of freedom simulated in a 30-dimensional subspace on the GPU.">
+<meta property="og:title" content="Reduced-Order Soft Bodies for Newton Physics">
+<meta property="og:description" content="A 30-DOF subspace solver for tetrahedral FEM in Newton, about 900x faster than full-order VBD at the same accuracy.">
+<meta property="og:image" content="media/poster_twist_res3.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1d2127;
+    --fg-2: #5b6470;
+    --fg-3: #8a929c;
+    --line: #e4e7eb;
+    --soft: #f4f5f7;
+    --link: #1c5ba8;
+    --hot: #c8432c;
+    --stage: #1c1e22;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 18px/1.65 var(--serif);
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 2px; }
+  main { max-width: 1000px; margin: 0 auto; padding: 0 20px 72px; }
+  .text { max-width: 700px; margin: 0 auto; }
+
+  .title { flex: none; width: 100%; text-align: center; max-width: 1160px; margin: 0 auto; padding: 28px 20px 28px; }
+  .title h1 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); line-height: 1.18; text-wrap: balance; font-weight: 600; margin: 0 0 6px; }
+  .title .sub { font-size: 1.18rem; font-style: italic; color: var(--fg-2); margin: 0 0 18px; }
+  .title .who { font-size: 1.12rem; margin: 0 0 1px; }
+  .title .where { color: var(--fg-2); font-size: 0.95rem; margin: 0 0 20px; }
+  .title .links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 0; }
+  .title .links a { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px 10px 16px; border-radius: 999px;
+                    font: 500 14.5px/1 var(--sans); color: #fff; background: #23272e; transition: background 0.15s; }
+  .title .links a:hover { background: #3b414b; text-decoration: none; }
+  .title .links svg { width: 15px; height: 15px; flex: none; fill: currentColor; }
+
+  h2, h3 { color: var(--fg); font-weight: 600; line-height: 1.3; }
+  h2 { font-size: 1.55rem; margin: 64px 0 14px; }
+  h3 { font-size: 1.18rem; margin: 34px 0 8px; }
+  .lead h2:first-child { margin-top: 20px; }
+  p { margin: 0 0 1.05em; }
+  ol, ul { padding-left: 1.3em; margin: 0 0 1.05em; }
+  li { margin-bottom: 6px; }
+  code { font: 0.82em var(--mono); background: var(--soft); padding: 1px 4px; border-radius: 3px; }
+  pre { font: 14px/1.55 var(--mono); background: var(--soft); padding: 14px 16px; overflow-x: auto; border-radius: 3px; margin: 0 0 1.1em; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .codeblock { margin: 10px 0 1.4em; border-radius: 8px; overflow: hidden; background: #282c34; }
+  .codeblock pre { margin: 0; padding: 14px 16px 16px; border-radius: 0; font: 13.5px/1.7 "JetBrains Mono", var(--mono);
+                   overflow-x: auto; }
+  .codeblock pre code { font: inherit; background: none; padding: 0; }
+  .codeblock pre::-webkit-scrollbar { height: 8px; }
+  .codeblock pre::-webkit-scrollbar-thumb { background: #4b5263; border-radius: 4px; }
+  .katex { font-size: 1.04em; }
+  .katex-display { margin: 1.1em 0 1.3em; overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+
+  figure { margin: 32px 0 36px; }
+  figure img, figure video { width: 100%; height: auto; display: block; }
+  figure video { background: var(--stage); border-radius: 3px; }
+  figcaption { font-size: 0.93rem; line-height: 1.5; color: #3f454d; margin-top: 10px; }
+  figcaption b { color: var(--fg); font-weight: 600; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .two figure { margin: 24px 0; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; gap: 0; } }
+
+  #live { font-family: var(--sans); }
+  /* live demo */
+  #live { position: relative; background: var(--stage); color: #d5d9de; }
+  /* demo and title share the first screen */
+  .hero { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
+  .hero #live { flex: 1 1 auto; min-height: 400px; }
+  .hero:has(#live.failed) { min-height: 0; }
+  #live-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; outline: none; }
+  #live.failed { display: none; }
+  #live .hud { top: 12px; left: 16px; right: 16px; }
+  #live .card { position: absolute; left: 16px; bottom: 16px; width: 470px; max-width: calc(100% - 32px);
+                background: rgba(22, 24, 28, 0.78); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px;
+                padding: 16px 18px; font-size: 14px; line-height: 1.55; }
+  #live .card h2 { font-size: 1.05rem; color: #fff; margin: 4px 0 4px; padding: 0; border: 0; }
+  #live .card p { margin: 0 0 14px; color: #bfc4cb; }
+  #live .nav { display: flex; align-items: stretch; gap: 8px; margin: 0 0 16px; }
+  #live .nav button.arrow { flex: none; font-size: 18px; width: 40px; padding: 0; line-height: 1; color: #fff;
+                            border-color: rgba(255, 255, 255, 0.35); background: rgba(255, 255, 255, 0.06); }
+  #live .nav button.arrow:hover { background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.6); }
+  #live .scenes { display: flex; gap: 6px; flex: 1; min-width: 0; }
+  #live .scenes button { position: relative; flex: 1; min-width: 0; padding: 8px 6px 11px; font-size: 13px; line-height: 1.2;
+                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #8b929b;
+                         border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.03); }
+  #live .scenes button:hover { border-color: rgba(255, 255, 255, 0.45); }
+  #live .scenes button::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: 3px; height: 3px;
+                                border-radius: 2px; background: rgba(255, 255, 255, 0.14); }
+  #live .scenes button i { position: absolute; left: 4px; bottom: 3px; height: 3px; width: 0; max-width: calc(100% - 8px);
+                           border-radius: 2px; background: #e0664a; z-index: 1; }
+  #live .scenes button[aria-current="true"] { color: #fff; border-color: rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.09); }
+  #live .scenes button[aria-current="true"]::after { background: rgba(255, 255, 255, 0.35); }
+  #live button { font: inherit; padding: 5px 12px; border: 1px solid rgba(255, 255, 255, 0.16); background: transparent;
+                 color: #e4e7eb; border-radius: 4px; cursor: pointer; }
+  #live button:hover { border-color: rgba(255, 255, 255, 0.4); }
+  #live button[aria-pressed="true"] { background: #e4e7eb; color: #16181c; border-color: #e4e7eb; }
+  #live .tools button.auto { margin-left: auto; }
+  #live .sweep { margin: 0 0 16px; }
+  #live .sweep .track { position: relative; height: 34px; border-bottom: 1px solid rgba(255, 255, 255, 0.25); }
+  #live .sweep .tick { position: absolute; bottom: 0; width: 1px; height: 8px; background: #8b929b; }
+  #live .sweep .tick span { position: absolute; bottom: 10px; left: 0; transform: translateX(-50%); white-space: nowrap;
+                            font-size: 11px; line-height: 1.2; color: #8b929b; text-align: center; }
+  #live .sweep .tick.on { background: #fff; }
+  #live .sweep .tick.on span { color: #fff; }
+  #live .sweep i { position: absolute; bottom: -4px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
+                   background: #e0664a; }
+  #live .sweep .ends { display: flex; justify-content: space-between; font-size: 11px; color: #6b727b; margin-top: 3px; }
+  #live .hints { position: absolute; right: 16px; bottom: 16px; display: grid; grid-template-columns: auto auto;
+                 gap: 7px 9px; align-items: center; padding: 10px 12px; border-radius: 6px;
+                 background: rgba(22, 24, 28, 0.6); border: 1px solid rgba(255, 255, 255, 0.06);
+                 font-size: 12.5px; line-height: 1.2; color: #c3c8cf; pointer-events: none; }
+  #live .hints .ic { display: flex; gap: 3px; justify-content: center; color: #9aa1aa; }
+  #live .hints svg { display: block; }
+  #live .hints kbd { font: 11px/1 var(--sans); min-width: 18px; padding: 3px 4px; text-align: center; color: #c3c8cf;
+                     border: 1px solid rgba(255, 255, 255, 0.28); border-bottom-width: 2px; border-radius: 4px; }
+  #live-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #live-fx .pull { position: absolute; left: 0; top: 0; font-size: 12px; color: #fff; background: rgba(22, 24, 28, 0.78);
+                   padding: 1px 6px; border-radius: 3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #live .tools { display: flex; flex-wrap: wrap; gap: 8px; }
+  #live .tools button[hidden] { display: none; }
+  #live-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  #live-labels .tag { position: absolute; left: 0; top: 0; text-align: center; font-size: 12px; line-height: 1.3;
+                      color: #9aa1aa; transition: color 0.2s; white-space: nowrap; }
+  #live-labels .tag span { font-variant-numeric: tabular-nums; }
+  #live-labels .tag.on { color: #fff; }
+  @media (max-width: 640px) {
+    #live .card { bottom: 12px; width: auto; right: 16px; }
+    #live .hints { bottom: auto; top: 40px; right: 12px; padding: 8px 10px; }
+    }
+  #viewer { margin-top: 12px; }
+  .stagebox { position: relative; background: var(--stage); border-radius: 3px; overflow: hidden; }
+  #stage { width: 100%; aspect-ratio: 16 / 8; min-height: 260px; display: block; touch-action: pan-y; cursor: grab; }
+  #stage:active { cursor: grabbing; }
+  #viewer .fallback { width: 100%; display: none; border-radius: 8px; }
+  #viewer.failed .stagebox, #viewer.failed .controls { display: none; }
+  #viewer.failed .fallback { display: block; }
+  .hud { position: absolute; top: 12px; left: 16px; right: 16px; pointer-events: none;
+         display: flex; justify-content: space-between; gap: 12px; font: 13px/1.4 var(--sans); color: #b9bec6; }
+  .hud strong { color: #fff; font-weight: 600; }
+  .legend { position: absolute; bottom: 12px; left: 16px; right: 16px; pointer-events: none;
+            display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font: 12px var(--sans); color: #b9bec6; }
+  .legend .ramp { width: 96px; height: 8px; border-radius: 2px; background: linear-gradient(90deg, #d7dadf, #f0a58f, #d1462f, #7d1d0e); }
+  .legend .ghost { width: 20px; border-top: 1.5px solid #fff; margin-left: 10px; }
+  .controls { display: grid; gap: 10px; margin-top: 14px; font: 14px var(--sans); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .row .k { color: var(--fg-2); width: 3.8em; }
+  .row button, .timeline #play { font: inherit; padding: 5px 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg);
+                                 border-radius: 3px; cursor: pointer; }
+  .row button:hover, .timeline #play:hover { border-color: #b9c0c8; }
+  .row button[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: #fff; }
+  .timeline { display: flex; gap: 12px; align-items: center; }
+  .timeline #play { width: 5em; padding: 5px 0; }
+  .track { position: relative; flex: 1; height: 22px; }
+  .track .load { position: absolute; top: 8px; height: 6px; left: 0; background: #f6d5cd; border-radius: 3px; }
+  .track input { position: absolute; inset: 0; width: 100%; margin: 0; background: none; accent-color: var(--fg); }
+  .time { min-width: 4em; text-align: right; color: var(--fg-2); font-variant-numeric: tabular-nums; }
+
+  /* section list, shown on wide screens after the title screen */
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  main h2, main h3 { scroll-margin-top: 24px; }
+  /* the rail spans main from the first heading down; the list inside sticks to the top of the window */
+  main { position: relative; }
+  .toc-rail { position: absolute; left: -210px; bottom: 0; width: 184px; display: none; }
+  .toc { position: sticky; top: 44px; max-height: calc(100vh - 88px); overflow-y: auto; }
+  .toc .head { font-size: 0.9rem; line-height: 1.3; font-weight: 600; color: var(--fg); margin: 0 0 14px; }
+  .toc .head a { color: inherit; }
+  .toc ol { position: relative; list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+  .toc li { margin: 0; }
+  .toc ol a { display: block; padding: 3px 0 3px 14px; font-size: 0.86rem; line-height: 1.35; color: var(--fg-3);
+              transition: color 0.15s; }
+  .toc li.sub a { padding-left: 26px; font-size: 0.8rem; }
+  .toc li:not(.sub) + li:not(.sub), .toc li.sub + li:not(.sub) { margin-top: 6px; }
+  .toc ol a:hover { color: var(--fg); text-decoration: none; }
+  .toc ol a[aria-current] { color: var(--fg); }
+  .toc .mark { position: absolute; left: -1px; top: 0; width: 2px; height: 0; background: var(--fg); border-radius: 1px;
+               transition: transform 0.25s ease, height 0.25s ease; }
+  @media (min-width: 1180px) {
+    .toc-rail { display: block; }
+    main { max-width: min(1000px, calc(100vw - 460px)); }
+  }
+
+  /* tables */
+  .scroll { overflow-x: auto; margin: 18px 0 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: 15.5px; line-height: 1.4; font-variant-numeric: lining-nums tabular-nums; }
+  th, td { padding: 7px 12px; text-align: right; white-space: nowrap; }
+  th { font-weight: 600; vertical-align: bottom; white-space: normal;
+       border-top: 1.5px solid var(--fg); border-bottom: 1px solid var(--fg-3); }
+  td { border-bottom: 1px solid var(--line); }
+  tbody tr:last-child td { border-bottom: 1.5px solid var(--fg); }
+  th:first-child, td:first-child { text-align: left; padding-left: 0; }
+  th:last-child, td:last-child { padding-right: 0; }
+  tr.last td { font-weight: 600; }
+  .note { font-size: 0.93rem; line-height: 1.5; color: #3f454d; }
+  .note.text { margin-top: 10px; }
+
+  ol.refs { padding-left: 1.4em; font-size: 0.95rem; }
+  ol.refs li { margin-bottom: 8px; }
+  @media (max-width: 640px) {
+    body { font-size: 17px; }
+    h2 { margin-top: 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="hero">
+<section id="live" aria-label="Live demo">
+  <canvas id="live-stage" aria-label="Interactive soft bodies simulated with the reduced solver"></canvas>
+  <div id="live-labels" hidden></div>
+  <div class="hud"><span id="live-hud-l">loading…</span><span id="live-hud-r"></span></div>
+  <div class="card" id="live-card">
+    <div class="nav">
+      <button id="live-prev" class="arrow" aria-label="Previous scene">&larr;</button>
+      <div class="scenes" id="live-scenes"></div>
+      <button id="live-next" class="arrow" aria-label="Next scene">&rarr;</button>
+    </div>
+    <p id="live-text"></p>
+    <div class="sweep" id="live-sweep" hidden><div class="track"><i id="live-sweep-at"></i></div></div>
+    <div class="tools">
+      <button id="live-tets" aria-pressed="false">Tet mesh</button>
+      <button id="live-cub" aria-pressed="false">Cubature tets</button>
+      <button id="live-shake" hidden>Shake</button>
+      <button id="live-reset">Reset</button>
+      <button id="live-auto" class="auto" aria-pressed="true">autoplay</button>
+    </div>
+  </div>
+  <div class="hints" id="live-hints" aria-hidden="true"></div>
+  <div id="live-fx"></div>
+</section>
+<header class="title">
+  <h1>Reduced-Order Soft Bodies for Newton Physics</h1>
+  <p class="sub">A GPU subspace solver for tetrahedral FEM</p>
+  <p class="who">Caleb Lowe</p>
+  <p class="where">Numerical Linear Algebra, MTH 551 | Fall 2026</p>
+  <p class="links"><a href="https://github.com/caleblx/newton-subspace"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Code</a><a href="#results"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 1.75a.75.75 0 0 1 1.5 0v11.5c0 .14.11.25.25.25h11a.75.75 0 0 1 0 1.5h-11A1.75 1.75 0 0 1 1.5 13.25Zm4 6.5a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-1.5 0Zm3-3.5a.75.75 0 0 1 1.5 0v6.5a.75.75 0 0 1-1.5 0Zm3 1.5a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-1.5 0Z"/></svg>Results</a><a href="#videos"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.6v10.8a.6.6 0 0 0 .9.52l8.9-5.4a.6.6 0 0 0 0-1.04l-8.9-5.4a.6.6 0 0 0-.9.52Z"/></svg>Videos</a></p>
+</header>
+</div>
+
+<main>
+<div class="text lead">
+  <h2>Overview</h2>
+  <p>Soft bodies in <a href="https://github.com/newton-physics/newton">Newton</a> are simulated with
+  Vertex Block Descent (VBD), which updates every vertex of the tetrahedral mesh on every iteration. On fine
+  meshes this gets expensive, and at Newton's default iteration count VBD is far from converged. Most of the
+  motion of an elastic body is much simpler than its mesh, though. A beam that bends, sways or twists moves
+  mainly in a small number of smooth shapes.</p>
+  <p>This project adds a reduced-order solver to Newton built on that observation. It uses the same energy
+  and time integrator as VBD, but the deformation is restricted to a 30-dimensional subspace, so each Newton
+  step solves a 30×30 system instead of updating tens of thousands of vertices. The basis comes either from
+  the vibration modes of the mesh and their modal derivatives, computed with shift-invert Lanczos, or from
+  snapshots of a few full-order runs, compressed with a randomized SVD. Element forces are integrated with a
+  cubature rule over a few hundred tets, so the cost of a step does not depend on the size of the mesh.</p>
+  <p>Results on a 120,000-tet beam (79,380 DOFs), with errors measured against a converged full-order run
+  on loads that were not used for training:</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>solver</th><th>ms per frame</th><th>mean error</th></tr></thead>
+    <tbody>
+      <tr><td>VBD, 10 iterations (Newton's default)</td><td>29.2</td><td>234%</td></tr>
+      <tr><td>VBD, 154 iterations</td><td>448</td><td>1.2%</td></tr>
+      <tr class="last"><td>reduced, 30 DOFs</td><td>0.49</td><td>1.2%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>At equal error the reduced solver is about 900 times faster than VBD. It is also 60 times faster than
+  VBD at its default 10 iterations, but that comparison doesn't mean much: at 10 iterations VBD is far from
+  converged on this mesh, and its error is larger than the displacement itself.</p>
+
+  <h2>Method</h2>
+  <p>The deformed positions are written as \(x = X + Uq\), where \(X\) is the rest shape, \(U\) is a fixed
+  \(3N \times 30\) basis normalized so that \(U^\top M U = I\), and \(q\) are the reduced coordinates. Each
+  substep minimizes the backward Euler objective</p>
+  \[ E(q) = \frac{1}{2h^2}\,\lVert q - y \rVert^2 + \sum_e w_e\, \Psi_e\big(F_e(q)\big),
+     \qquad y = q_n + h\,\dot q_n + h^2\, U^\top f_\text{ext} \]
+  <p>over \(q\). Here \(\Psi\) is the stable Neo-Hookean energy (Smith et al. 2018) with the damping term
+  VBD uses, so the subspace is the only modeling difference between the two solvers. As a check, running the
+  reduced solver with a full basis gives a standard full-order Newton solver, and its trajectories match
+  converged VBD to within 0.09%.</p>
+
+  <h3>Modal basis</h3>
+  <p>The vibration modes are the solutions of \(K\phi = \omega^2 M\phi\) with the smallest eigenvalues,
+  where \(K\) is the stiffness matrix at rest. I compute them with shift-invert Lanczos
+  (<code>scipy.sparse.linalg.eigsh</code> with a shift \(\sigma\)). This needs one sparse LU factorization
+  of \(K - \sigma M\), and it maps the eigenvalues near \(\sigma\) to the largest eigenvalues of
+  \((K - \sigma M)^{-1} M\), which Lanczos finds quickly.</p>
+  <p>The linear modes by themselves give 84 to 99% error on these tests. A linear basis can't represent
+  large rotations, and the rotated shapes it can reach are much too stiff under a nonlinear material. Adding
+  the modal derivatives of the lowest modes (Barbič and James 2005) and the static deflection under gravity
+  brings the error down to about 1%, still without any training data.</p>
+
+  <h3>POD basis</h3>
+  <p>The second basis is fit to data. I run full-order VBD on four training loads, collect mass-weighted
+  displacement snapshots, and keep the leading 30 left singular vectors. The snapshot matrix has tens of
+  thousands of rows and only a few hundred columns, so I use a randomized SVD with power iterations
+  (Halko et al. 2011) instead of a full decomposition. POD is very accurate on loads similar to the training
+  set, but it can't represent deformations that never appear in the snapshots. None of the training loads
+  twist the beam, and on the twist test POD is 23% off.</p>
+  <p>The SVD itself multiplies \(A\) by a Gaussian sketch with a
+  few extra columns, sharpens the range estimate with a QR-stabilized power iteration, and takes the exact
+  SVD of the small projected matrix \(Q^\top A\):</p>
+<div class="codeblock"><pre class="shiki one-dark-pro" style="background-color:#282c34;color:#abb2bf" tabindex="0"><code><span class="line"><span style="color:#C678DD">def</span><span style="color:#61AFEF"> randomized_svd</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66;font-style:italic">A</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">k</span><span style="color:#ABB2BF">, *, </span><span style="color:#D19A66;font-style:italic">oversample</span><span style="color:#ABB2BF">=</span><span style="color:#D19A66">10</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">n_iter</span><span style="color:#ABB2BF">=</span><span style="color:#D19A66">4</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">seed</span><span style="color:#ABB2BF">=</span><span style="color:#D19A66">0</span><span style="color:#ABB2BF">):</span></span>
+<span class="line"><span style="color:#ABB2BF">    rng </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> np.random.</span><span style="color:#61AFEF">default_rng</span><span style="color:#ABB2BF">(seed)</span></span>
+<span class="line"><span style="color:#ABB2BF">    m, n </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> A.shape</span></span>
+<span class="line"><span style="color:#ABB2BF">    p </span><span style="color:#56B6C2">=</span><span style="color:#56B6C2"> min</span><span style="color:#ABB2BF">(n, k </span><span style="color:#56B6C2">+</span><span style="color:#ABB2BF"> oversample)</span></span>
+<span class="line"><span style="color:#ABB2BF">    Y </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> A </span><span style="color:#56B6C2">@</span><span style="color:#ABB2BF"> rng.</span><span style="color:#61AFEF">standard_normal</span><span style="color:#ABB2BF">((n, p))</span></span>
+<span class="line"><span style="color:#ABB2BF">    Q, _ </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> np.linalg.</span><span style="color:#61AFEF">qr</span><span style="color:#ABB2BF">(Y)</span></span>
+<span class="line"><span style="color:#C678DD">    for</span><span style="color:#ABB2BF"> _ </span><span style="color:#C678DD">in</span><span style="color:#56B6C2"> range</span><span style="color:#ABB2BF">(n_iter):</span></span>
+<span class="line"><span style="color:#ABB2BF">        Z, _ </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> np.linalg.</span><span style="color:#61AFEF">qr</span><span style="color:#ABB2BF">(A.T </span><span style="color:#56B6C2">@</span><span style="color:#ABB2BF"> Q)</span></span>
+<span class="line"><span style="color:#ABB2BF">        Q, _ </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> np.linalg.</span><span style="color:#61AFEF">qr</span><span style="color:#ABB2BF">(A </span><span style="color:#56B6C2">@</span><span style="color:#ABB2BF"> Z)</span></span>
+<span class="line"><span style="color:#ABB2BF">    B </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> Q.T </span><span style="color:#56B6C2">@</span><span style="color:#ABB2BF"> A</span></span>
+<span class="line"><span style="color:#ABB2BF">    Ub, S, Vt </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> np.linalg.</span><span style="color:#61AFEF">svd</span><span style="color:#ABB2BF">(B, </span><span style="color:#E06C75;font-style:italic">full_matrices</span><span style="color:#56B6C2">=</span><span style="color:#D19A66">False</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#C678DD">    return</span><span style="color:#ABB2BF"> (Q </span><span style="color:#56B6C2">@</span><span style="color:#ABB2BF"> Ub)[:, :k], S[:k], Vt[:k]</span></span></code></pre></div>
+
+  <h3>GPU implementation</h3>
+  <p>Since \(U\) is fixed, the deformation gradient of each element is affine in \(q\):
+  \(\operatorname{vec}(F_e - I) = B_e q\), with a \(9 \times 30\) matrix \(B_e\) precomputed per element.
+  One Newton iteration then consists of</p>
+  <ol>
+    <li>computing \(\operatorname{vec}(F - I) = Bq\) for all elements with one GEMV,</li>
+    <li>evaluating the stress and Hessian of each element, with the Hessian applied as a 3×3 operator rather than assembled as a 9×9 matrix,</li>
+    <li>reducing to the 30×30 system \(H_r = \sum_e w_e B_e^\top \mathcal{H}_e B_e\) and its gradient with <code>wp.tile_matmul</code>,</li>
+    <li>solving \((H_r + I/h^2)\,d = \nabla E\) by Cholesky in a single thread block, and</li>
+    <li>a line search over \(q - \alpha d\) for \(\alpha = 1, \tfrac12, \tfrac14, \tfrac18\).</li>
+  </ol>
+  <p>Steps 3 and 4 use Warp's tile API. <code>B</code> stacks the \(B_e\) of all integrated elements,
+  <code>C</code> holds the products \(\mathcal{H}_e B_e\) from step 2, and <code>P</code> the stresses.
+  Each thread block walks over its share of rows in chunks of <code>TR</code> and accumulates
+  \(B^\top C\) and \(B^\top P\) into 30×30 and 30×1 tiles, which are then added into the global
+  result. A single block factors and solves the 30×30 system afterwards. <code>R</code> (the basis size) and
+  <code>TR</code> are compile-time constants. Two lines that reset the accumulators are left out:</p>
+<div class="codeblock"><pre class="shiki one-dark-pro" style="background-color:#282c34;color:#abb2bf" tabindex="0"><code><span class="line"><span style="color:#61AFEF">@wp</span><span style="color:#ABB2BF">.</span><span style="color:#61AFEF">kernel</span></span>
+<span class="line"><span style="color:#C678DD">def</span><span style="color:#61AFEF"> reduce_kernel</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66;font-style:italic">B</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">C</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">P</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">n_chunks</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">n_blocks</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">H_r</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">g_r</span><span style="color:#ABB2BF">):</span></span>
+<span class="line"><span style="color:#ABB2BF">    blk, _lane </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tid</span><span style="color:#ABB2BF">()</span></span>
+<span class="line"><span style="color:#ABB2BF">    H_acc </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_zeros</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(R, R), </span><span style="color:#E06C75;font-style:italic">dtype</span><span style="color:#56B6C2">=float</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#ABB2BF">    g_acc </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_zeros</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(R, </span><span style="color:#D19A66">1</span><span style="color:#ABB2BF">), </span><span style="color:#E06C75;font-style:italic">dtype</span><span style="color:#56B6C2">=float</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#ABB2BF">    c </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> blk</span></span>
+<span class="line"><span style="color:#C678DD">    while</span><span style="color:#ABB2BF"> c </span><span style="color:#56B6C2">&#x3C;</span><span style="color:#ABB2BF"> n_chunks:</span></span>
+<span class="line"><span style="color:#ABB2BF">        tB </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(B, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66">TR</span><span style="color:#ABB2BF">, R), </span><span style="color:#E06C75;font-style:italic">offset</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(c </span><span style="color:#56B6C2">*</span><span style="color:#D19A66"> TR</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">0</span><span style="color:#ABB2BF">))</span></span>
+<span class="line"><span style="color:#ABB2BF">        tC </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(C, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66">TR</span><span style="color:#ABB2BF">, R), </span><span style="color:#E06C75;font-style:italic">offset</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(c </span><span style="color:#56B6C2">*</span><span style="color:#D19A66"> TR</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">0</span><span style="color:#ABB2BF">))</span></span>
+<span class="line"><span style="color:#ABB2BF">        tP </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(P, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66">TR</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">1</span><span style="color:#ABB2BF">), </span><span style="color:#E06C75;font-style:italic">offset</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(c </span><span style="color:#56B6C2">*</span><span style="color:#D19A66"> TR</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">0</span><span style="color:#ABB2BF">))</span></span>
+<span class="line"><span style="color:#ABB2BF">        tBt </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_transpose</span><span style="color:#ABB2BF">(tB)</span></span>
+<span class="line"><span style="color:#ABB2BF">        wp.</span><span style="color:#61AFEF">tile_matmul</span><span style="color:#ABB2BF">(tBt, tC, H_acc)</span></span>
+<span class="line"><span style="color:#ABB2BF">        wp.</span><span style="color:#61AFEF">tile_matmul</span><span style="color:#ABB2BF">(tBt, tP, g_acc)</span></span>
+<span class="line"><span style="color:#ABB2BF">        c </span><span style="color:#56B6C2">+=</span><span style="color:#ABB2BF"> n_blocks</span></span>
+<span class="line"><span style="color:#ABB2BF">    wp.</span><span style="color:#61AFEF">tile_atomic_add</span><span style="color:#ABB2BF">(H_r, H_acc)</span></span>
+<span class="line"><span style="color:#ABB2BF">    wp.</span><span style="color:#61AFEF">tile_atomic_add</span><span style="color:#ABB2BF">(g_r, g_acc)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#61AFEF">@wp</span><span style="color:#ABB2BF">.</span><span style="color:#61AFEF">kernel</span></span>
+<span class="line"><span style="color:#C678DD">def</span><span style="color:#61AFEF"> solve_kernel</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66;font-style:italic">H_r</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">g_r</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">q</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">y</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">inv_h2</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66;font-style:italic">d</span><span style="color:#ABB2BF">):</span></span>
+<span class="line"><span style="color:#ABB2BF">    tH </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(H_r, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(R, R), </span><span style="color:#E06C75;font-style:italic">storage</span><span style="color:#56B6C2">=</span><span style="color:#98C379">"shared"</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#ABB2BF">    tA </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_diag_add</span><span style="color:#ABB2BF">(tH, wp.</span><span style="color:#61AFEF">tile_full</span><span style="color:#ABB2BF">(</span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">R, </span><span style="color:#E06C75;font-style:italic">value</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">inv_h2, </span><span style="color:#E06C75;font-style:italic">dtype</span><span style="color:#56B6C2">=float</span><span style="color:#ABB2BF">))</span></span>
+<span class="line"><span style="color:#ABB2BF">    tg </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(g_r, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(R, </span><span style="color:#D19A66">1</span><span style="color:#ABB2BF">))</span></span>
+<span class="line"><span style="color:#ABB2BF">    tq </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(q, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">R)</span></span>
+<span class="line"><span style="color:#ABB2BF">    ty </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_load</span><span style="color:#ABB2BF">(y, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">R)</span></span>
+<span class="line"><span style="color:#ABB2BF">    grad </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_reshape</span><span style="color:#ABB2BF">(tg, </span><span style="color:#E06C75;font-style:italic">shape</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(R,)) </span><span style="color:#56B6C2">+</span><span style="color:#ABB2BF"> (tq </span><span style="color:#56B6C2">-</span><span style="color:#ABB2BF"> ty) </span><span style="color:#56B6C2">*</span><span style="color:#ABB2BF"> inv_h2</span></span>
+<span class="line"><span style="color:#D19A66">    ...</span></span>
+<span class="line"><span style="color:#ABB2BF">    L </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> wp.</span><span style="color:#61AFEF">tile_cholesky</span><span style="color:#ABB2BF">(tA)</span></span>
+<span class="line"><span style="color:#ABB2BF">    wp.</span><span style="color:#61AFEF">tile_store</span><span style="color:#ABB2BF">(d, wp.</span><span style="color:#61AFEF">tile_cholesky_solve</span><span style="color:#ABB2BF">(L, grad))</span></span></code></pre></div>
+  <p>None of these steps read anything back to the host, so the ten substeps of a frame are captured in one
+  CUDA graph.</p>
+
+  <h3>Cubature</h3>
+  <p>Evaluating every element would still make the cost grow with the mesh. Following An et al. (2008), I
+  pick a small set of elements and nonnegative weights \(w_e\) with greedy NNLS, so that the weighted sum of
+  element forces matches the exact reduced forces on training poses. About 300 elements are enough, which
+  cuts the element loop on the finest mesh from 120,000 tets to 300.</p>
+
+  <h2 id="results">Results</h2>
+  <p>All tests use a 1.2 m cantilever clamped at one end, with \(\mu = \lambda = 1\) MPa, simulated for
+  2 s at 60 fps with 10 substeps per frame on a single H100. The error metric is the mass-weighted relative
+  trajectory error against a converged full-order run, averaged over two push loads that were not part of
+  the training set.</p>
+</div>
+
+<figure id="viewer">
+  <div class="stagebox">
+    <canvas id="stage" aria-label="3D playback of the beam simulations"></canvas>
+    <div class="hud"><span id="hud-l"></span><span id="hud-r"></span></div>
+    <div class="legend"><span>error</span><span>0</span><span class="ramp"></span><span>5 cm</span><span class="ghost"></span><span>full-order answer</span></div>
+  </div>
+  <img class="fallback" src="media/poster_twist_res3.png" alt="Three beams under a twisting load: full-order reference, POD subspace, and modal-derivative subspace">
+  <div class="controls">
+    <div class="row" id="opt-load"><span class="k">Load</span>
+      <button data-v="twist" aria-pressed="true">Twist</button>
+      <button data-v="diag_load" aria-pressed="false">Diagonal push</button>
+      <button data-v="side_heavy" aria-pressed="false">Heavy side push</button>
+    </div>
+    <div class="row" id="opt-run"><span class="k">Basis</span>
+      <button data-v="modal+MD" aria-pressed="true">Modes + derivatives</button>
+      <button data-v="pod" aria-pressed="false">POD</button>
+      <button data-v="vbd" aria-pressed="false">None (full VBD)</button>
+    </div>
+    <div class="timeline">
+      <button id="play">pause</button>
+      <div class="track"><div class="load" id="loadbar"></div><input id="scrub" type="range" min="0" max="1000" value="0" aria-label="time"></div>
+      <span class="time" id="clock">0.00 s</span>
+    </div>
+  </div>
+  <figcaption><b>Figure 1.</b> Recorded simulations on the 25,920-tet beam. The solid beam is the 30-DOF
+  solution, shaded by its distance from the full-order solution, which is drawn as a white outline. The
+  highlighted part of the timeline marks when the load is applied. None of these loads were used to build
+  either basis.</figcaption>
+</figure>
+
+<div class="text"><h3>Mesh refinement</h3></div>
+<div class="scroll">
+<table>
+  <thead><tr><th>full DOFs</th><th>tets</th><th>VBD default<br>ms / error</th><th>reduced<br>ms</th><th>reduced error<br>mean / max</th><th>VBD at same error<br>iterations / ms</th><th>speedup,<br>same error</th><th>speedup vs<br>VBD default</th></tr></thead>
+  <tbody>
+    <tr><td>900</td><td>960</td><td>20.1 / 0.05%</td><td>0.47</td><td>1.23 / 1.93%</td><td>6 / 12</td><td>26x</td><td>42x</td></tr>
+    <tr><td>5,832</td><td>7,680</td><td>25.3 / 42%</td><td>0.47</td><td>1.07 / 1.67%</td><td>24 / 61</td><td>129x</td><td>53x</td></tr>
+    <tr><td>18,252</td><td>25,920</td><td>24.9 / 159%</td><td>0.48</td><td>1.45 / 2.52%</td><td>53 / 132</td><td>272x</td><td>51x</td></tr>
+    <tr><td>41,616</td><td>61,440</td><td>27.7 / 178%</td><td>0.49</td><td>1.15 / 1.99%</td><td>102 / 281</td><td>571x</td><td>56x</td></tr>
+    <tr class="last"><td>79,380</td><td>120,000</td><td>29.2 / 234%</td><td>0.49</td><td>1.20 / 2.08%</td><td>154 / 448</td><td>924x</td><td>60x</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="note text">All rows use the POD basis with r = 30, at most 400 cubature tets and one Newton
+iteration per substep. The VBD iteration count at equal error is interpolated from VBD's error against
+iteration count on a log-log scale.</p>
+
+<figure>
+  <img src="figures/resolution.svg" alt="Cost and error against mesh size">
+  <figcaption><b>Figure 2.</b> Cost per frame and error against mesh size. With cubature the reduced
+  solver's cost is essentially constant and its error stays around 1%. With exact integration the cost
+  grows with the number of elements. VBD at 10 iterations has nearly constant cost, but its error goes from
+  0.05% on the coarsest mesh to 234% on the finest.</figcaption>
+</figure>
+<div class="two">
+  <figure>
+    <img src="figures/pareto.svg" alt="Error against cost per frame on the finest mesh">
+    <figcaption><b>Figure 3.</b> Error against cost on the finest mesh, with VBD run at 5 to 300
+    iterations per substep. VBD needs about 154 iterations to match the reduced solver.</figcaption>
+  </figure>
+  <figure>
+    <img src="figures/solver_settings.svg" alt="Error against cost for different iteration and substep counts">
+    <figcaption><b>Figure 4.</b> Newton iterations and substeps per frame (5,832 DOFs). One iteration
+    per substep is as accurate as three and 2.8 times cheaper. Going from 10 substeps to 5 adds about 11%
+    error, so all runs use VBD's step of 1/600 s.</figcaption>
+  </figure>
+</div>
+
+<div class="text">
+  <h3>Basis comparison</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>basis, finest mesh</th><th>training runs</th><th>diagonal push</th><th>heavy side push</th><th>twist</th></tr></thead>
+    <tbody>
+      <tr><td>POD (randomized SVD)</td><td>yes</td><td>0.32%</td><td>2.08%</td><td>23.2%</td></tr>
+      <tr><td>modes + derivatives</td><td>no</td><td>0.45%</td><td>2.56%</td><td>1.17%</td></tr>
+      <tr><td>linear modes only*</td><td>no</td><td>84%</td><td>99%</td><td>69%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">*Only run on the 5,832-DOF mesh, without cubature.</p>
+  <p>POD is the most accurate on the two push loads, which resemble its training data. The modal-derivative
+  basis is slightly worse on those but much better on the twist, and it doesn't need any full-order
+  simulations to build.</p>
+</div>
+
+<figure>
+  <img src="figures/basis_size.svg" alt="Error against basis size">
+  <figcaption><b>Figure 5.</b> Error against basis size (5,832 DOFs). By r = 30 both POD and the
+  modal-derivative basis are below 1% on the diagonal push. On the twist, POD stays above 20% for every r.
+  The thin line is the projection error of the reference trajectory onto the POD basis, which is the lowest
+  error that basis could reach.</figcaption>
+</figure>
+<div class="text"><h3>Stiffness and cubature</h3></div>
+<figure>
+  <img src="figures/stiffness.svg" alt="Error against material stiffness">
+  <figcaption><b>Figure 6.</b> Error against stiffness (5,832 DOFs), with the largest tip displacement at
+  each stiffness along the top. Stiffer beams are easier: on the push loads POD goes from 0.98% at 1 MPa to
+  0.02% at 10 MPa. Below 1 MPa the beam folds over, with up to 2.4 m of tip displacement on a 1.2 m beam,
+  and 30 DOFs are not enough. The references here come from a separate full-order Newton/PCG solver,
+  because VBD converges very slowly on stiff materials.</figcaption>
+</figure>
+<figure>
+  <img src="figures/cubature.svg" alt="Error and cost against number of cubature tets">
+  <figcaption><b>Figure 7.</b> Error and cost against the number of cubature elements (61,440-tet mesh).
+  With 304 elements the error is 1.14% at 1.35 ms per frame, compared with 1.43% at 19.3 ms when every
+  element is integrated. Below about 100 elements the error rises quickly.</figcaption>
+</figure>
+
+<div class="text"><h2 id="videos">Videos</h2></div>
+<figure>
+  <video src="media/compare_twist_res3.mp4" poster="media/poster_twist_res3.png" controls muted loop playsinline preload="none"></video>
+  <figcaption><b>Twist.</b> Full-order VBD (left), POD (middle) and the modal-derivative basis (right),
+  at 18,252 DOFs. The reduced beams are shaded by their distance from the reference, saturating at 6 cm.
+  The POD basis has no twisting motion in it and ends up 23% off.</figcaption>
+</figure>
+<div class="two">
+  <figure>
+    <video src="media/compare_diag_load_res3.mp4" poster="media/poster_diag_load_res3.png" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Diagonal push.</b></figcaption>
+  </figure>
+  <figure>
+    <video src="media/compare_side_heavy_res3.mp4" poster="media/poster_side_heavy_res3.png" controls muted loop playsinline preload="none"></video>
+    <figcaption><b>Heavy side push.</b></figcaption>
+  </figure>
+</div>
+
+<div class="text">
+  <h2>Limitations</h2>
+  <ul>
+    <li>VBD with its default 10 iterations is far from converged on the finer meshes (42% error at 5,832
+    DOFs, 234% at 79,380). All errors on this page are therefore measured against VBD run for 50 to 400
+    iterations, depending on the mesh. On the three smaller meshes these references agree with an
+    independent full-order Newton/PCG solver to within 0.08%.</li>
+    <li>In float32 the usual form of the stable Neo-Hookean energy loses most of its precision at small
+    strain. With \(\mu = 100\) MPa the beam did not move at all, because the line search couldn't see the
+    energy decrease. The kernels are written in terms of \(H = F - I\) instead and are tested against
+    float64 finite differences down to \(10^{-4}\) strain.</li>
+    <li>The square beam has repeated eigenvalues and ARPACK starts from a random vector, so the modal basis
+    was not reproducible between runs. The modal-derivative twist error on the 18,252-DOF mesh is 1.0% in
+    the parameter sweeps but 2.8% in the run shown in Figure 1 and the videos. The start vector is fixed
+    now, but the sweeps have not been rerun.</li>
+    <li>There is no contact handling, and both POD and the cubature rule depend on the choice of training
+    loads. All numbers come from a single run.</li>
+  </ul>
+
+  <h2>Code</h2>
+  <p><code>SolverReducedFEM</code> is a subclass of Newton's <code>SolverBase</code> with its kernels written
+  in <a href="https://github.com/NVIDIA/warp">Warp</a>, so it can be used from an ordinary Newton script. The repository contains the solver, both basis constructions, the cubature
+  fit, the full-order reference solver, the scripts for every experiment on this page, and an example that
+  runs the reduced beam next to a full-order one:</p>
+<div class="codeblock"><pre class="shiki one-dark-pro" style="background-color:#282c34;color:#abb2bf" tabindex="0"><code><span class="line"><span style="color:#61AFEF">python</span><span style="color:#98C379"> examples/example_reduced_cantilever.py</span><span style="color:#D19A66"> --viewer</span><span style="color:#98C379"> gl</span><span style="color:#D19A66"> --cubature</span><span style="color:#D19A66"> 300</span></span></code></pre></div>
+  <p>Setting it up on another model looks like this:</p>
+<div class="codeblock"><pre class="shiki one-dark-pro" style="background-color:#282c34;color:#abb2bf" tabindex="0"><code><span class="line"><span style="color:#C678DD">from</span><span style="color:#ABB2BF"> newton_subspace </span><span style="color:#C678DD">import</span><span style="color:#ABB2BF"> SolverReducedFEM, TetMesh, modal_basis</span></span>
+<span class="line"><span style="color:#C678DD">from</span><span style="color:#ABB2BF"> newton_subspace.cubature </span><span style="color:#C678DD">import</span><span style="color:#ABB2BF"> fit_cubature</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#ABB2BF">mesh </span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF"> TetMesh.</span><span style="color:#61AFEF">from_model</span><span style="color:#ABB2BF">(model)  </span><span style="color:#7F848E;font-style:italic"># any newton.Model with tetrahedra</span></span>
+<span class="line"><span style="color:#ABB2BF">U </span><span style="color:#56B6C2">=</span><span style="color:#61AFEF"> modal_basis</span><span style="color:#ABB2BF">(mesh, </span><span style="color:#D19A66">30</span><span style="color:#ABB2BF">, </span><span style="color:#E06C75;font-style:italic">gravity_mode</span><span style="color:#56B6C2">=</span><span style="color:#D19A66">True</span><span style="color:#ABB2BF">, </span><span style="color:#E06C75;font-style:italic">modal_derivatives</span><span style="color:#56B6C2">=</span><span style="color:#D19A66">True</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"><span style="color:#7F848E;font-style:italic"># Q: training poses in reduced coordinates</span></span>
+<span class="line"><span style="color:#ABB2BF">ids, w, _ </span><span style="color:#56B6C2">=</span><span style="color:#61AFEF"> fit_cubature</span><span style="color:#ABB2BF">(mesh, U, Q, </span><span style="color:#E06C75;font-style:italic">max_points</span><span style="color:#56B6C2">=</span><span style="color:#D19A66">300</span><span style="color:#ABB2BF">, </span><span style="color:#E06C75;font-style:italic">tol</span><span style="color:#56B6C2">=</span><span style="color:#D19A66">1e-4</span><span style="color:#ABB2BF">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#ABB2BF">solver </span><span style="color:#56B6C2">=</span><span style="color:#61AFEF"> SolverReducedFEM</span><span style="color:#ABB2BF">(model, U, </span><span style="color:#E06C75;font-style:italic">cubature</span><span style="color:#56B6C2">=</span><span style="color:#ABB2BF">(ids, w))</span></span>
+<span class="line"><span style="color:#C678DD">for</span><span style="color:#ABB2BF"> _ </span><span style="color:#C678DD">in</span><span style="color:#56B6C2"> range</span><span style="color:#ABB2BF">(</span><span style="color:#D19A66">10</span><span style="color:#ABB2BF">):</span></span>
+<span class="line"><span style="color:#ABB2BF">    solver.</span><span style="color:#61AFEF">step</span><span style="color:#ABB2BF">(state, </span><span style="color:#D19A66">None</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">None</span><span style="color:#ABB2BF">, </span><span style="color:#D19A66">None</span><span style="color:#ABB2BF">, dt)</span></span>
+<span class="line"><span style="color:#ABB2BF">solver.</span><span style="color:#61AFEF">write_state</span><span style="color:#ABB2BF">(state)</span></span></code></pre></div>
+  <p><a href="https://github.com/caleblx/newton-subspace">github.com/caleblx/newton-subspace</a></p>
+
+  <h2>References</h2>
+  <ol class="refs">
+    <li>J. Barbič, D. James. Real-time subspace integration for St. Venant-Kirchhoff deformable models. <i>SIGGRAPH</i> 2005.</li>
+    <li>S. S. An, T. Kim, D. James. Optimizing cubature for efficient integration of subspace deformations. <i>SIGGRAPH Asia</i> 2008.</li>
+    <li>B. Smith, F. de Goes, T. Kim. Stable Neo-Hookean flesh simulation. <i>ACM Transactions on Graphics</i> 2018.</li>
+    <li>N. Halko, P.-G. Martinsson, J. Tropp. Finding structure with randomness. <i>SIAM Review</i> 2011.</li>
+    <li>A. H. Chen, Z. Liu, Y. Yang, C. Yuksel. Vertex Block Descent. <i>SIGGRAPH</i> 2024.</li>
+  </ol>
+</div>
+</main>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="demo.js"></script>
+<script type="module" src="viewer.js"></script>
+<script type="module" src="toc.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.querySelector('main'), { delimiters: [{ left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }] })"></script>
+</body>
+</html>

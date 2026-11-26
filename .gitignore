@@ -1,0 +1,9 @@
+env/
+.warp_cache/
+__pycache__/
+*.pyc
+results/cache/
+results/log_*.txt
+docs/media/frames_*/
+output.usd
+gpu.sh

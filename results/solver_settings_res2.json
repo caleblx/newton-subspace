@@ -1,0 +1,168 @@
+{
+ "res": 2,
+ "k": 1000000.0,
+ "r": 30,
+ "cubature_points": 342,
+ "rows": [
+  {
+   "substeps": 1,
+   "newton_iterations": 1,
+   "errors": {
+    "diag_load": 0.49405441496067376,
+    "side_heavy": 0.5975742949366103,
+    "twist": 0.38733587109730144
+   },
+   "ms_per_frame": 0.05777369951829314
+  },
+  {
+   "substeps": 1,
+   "newton_iterations": 2,
+   "errors": {
+    "diag_load": 0.4731174764830771,
+    "side_heavy": 0.5499117392099898,
+    "twist": 0.3837550804779873
+   },
+   "ms_per_frame": 0.10083835028732817
+  },
+  {
+   "substeps": 1,
+   "newton_iterations": 3,
+   "errors": {
+    "diag_load": 0.47309953010829586,
+    "side_heavy": 0.549806548862672,
+    "twist": 0.38375145885013406
+   },
+   "ms_per_frame": 0.14406218348691863
+  },
+  {
+   "substeps": 1,
+   "newton_iterations": 5,
+   "errors": {
+    "diag_load": 0.4731011133117235,
+    "side_heavy": 0.5497906059133851,
+    "twist": 0.38375119633804455
+   },
+   "ms_per_frame": 0.23033316635216275
+  },
+  {
+   "substeps": 2,
+   "newton_iterations": 1,
+   "errors": {
+    "diag_load": 0.2906885653038485,
+    "side_heavy": 0.36596961292500363,
+    "twist": 0.3001119186447936
+   },
+   "ms_per_frame": 0.10531051860501368
+  },
+  {
+   "substeps": 2,
+   "newton_iterations": 2,
+   "errors": {
+    "diag_load": 0.2833852302076357,
+    "side_heavy": 0.34520435573652514,
+    "twist": 0.2992404693022154
+   },
+   "ms_per_frame": 0.19150391841928163
+  },
+  {
+   "substeps": 2,
+   "newton_iterations": 3,
+   "errors": {
+    "diag_load": 0.2833857865935207,
+    "side_heavy": 0.34518855136622373,
+    "twist": 0.299241401423619
+   },
+   "ms_per_frame": 0.27873666646579903
+  },
+  {
+   "substeps": 2,
+   "newton_iterations": 5,
+   "errors": {
+    "diag_load": 0.28338472827120476,
+    "side_heavy": 0.3451870888863633,
+    "twist": 0.2992376399623177
+   },
+   "ms_per_frame": 0.4507900836567084
+  },
+  {
+   "substeps": 5,
+   "newton_iterations": 1,
+   "errors": {
+    "diag_load": 0.0904757275887331,
+    "side_heavy": 0.11980470303396643,
+    "twist": 0.24784709166149874
+   },
+   "ms_per_frame": 0.2475875313393772
+  },
+  {
+   "substeps": 5,
+   "newton_iterations": 2,
+   "errors": {
+    "diag_load": 0.08946718705184395,
+    "side_heavy": 0.116493701978923,
+    "twist": 0.24799523877371607
+   },
+   "ms_per_frame": 0.46353316865861416
+  },
+  {
+   "substeps": 5,
+   "newton_iterations": 3,
+   "errors": {
+    "diag_load": 0.089453010778118,
+    "side_heavy": 0.11648909536553774,
+    "twist": 0.2480007383716708
+   },
+   "ms_per_frame": 0.6813492354316015
+  },
+  {
+   "substeps": 5,
+   "newton_iterations": 5,
+   "errors": {
+    "diag_load": 0.08944552338575813,
+    "side_heavy": 0.11649563326824681,
+    "twist": 0.2480026077525948
+   },
+   "ms_per_frame": 1.1125201475806534
+  },
+  {
+   "substeps": 10,
+   "newton_iterations": 1,
+   "errors": {
+    "diag_load": 0.004673663742095477,
+    "side_heavy": 0.016722120952871955,
+    "twist": 0.2470976535351579
+   },
+   "ms_per_frame": 0.4852086499643823
+  },
+  {
+   "substeps": 10,
+   "newton_iterations": 2,
+   "errors": {
+    "diag_load": 0.004580770048259054,
+    "side_heavy": 0.016703649316782747,
+    "twist": 0.24715066029243465
+   },
+   "ms_per_frame": 0.9178550836319725
+  },
+  {
+   "substeps": 10,
+   "newton_iterations": 3,
+   "errors": {
+    "diag_load": 0.004581854294618425,
+    "side_heavy": 0.01668974792611734,
+    "twist": 0.24714686544652206
+   },
+   "ms_per_frame": 1.353419847631206
+  },
+  {
+   "substeps": 10,
+   "newton_iterations": 5,
+   "errors": {
+    "diag_load": 0.004571717416513719,
+    "side_heavy": 0.01664221800870285,
+    "twist": 0.2471329753651885
+   },
+   "ms_per_frame": 2.2149617861335478
+  }
+ ]
+}
