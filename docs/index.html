@@ -10,7 +10,7 @@
 <meta property="og:image" content="media/poster_twist_res3.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <style>
   :root {
@@ -38,8 +38,7 @@
   .text { max-width: 700px; margin: 0 auto; }
 
   .title { flex: none; width: 100%; text-align: center; max-width: 1160px; margin: 0 auto; padding: 28px 20px 28px; }
-  .title h1 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); line-height: 1.18; text-wrap: balance; font-weight: 600; margin: 0 0 6px; }
-  .title .sub { font-size: 1.18rem; font-style: italic; color: var(--fg-2); margin: 0 0 18px; }
+  .title h1 { font-family: var(--sans); font-size: clamp(1.75rem, 3.6vw, 2.6rem); line-height: 1.18; text-wrap: balance; font-weight: 550; margin: 0 0 14px; }
   .title .who { font-size: 1.12rem; margin: 0 0 1px; }
   .title .where { color: var(--fg-2); font-size: 0.95rem; margin: 0 0 20px; }
   .title .links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 0; }
@@ -80,8 +79,9 @@
   /* live demo */
   #live { position: relative; background: var(--stage); color: #d5d9de; }
   /* demo and title share the first screen */
-  .hero { display: flex; flex-direction: column; min-height: 100vh; min-height: 100svh; }
-  .hero #live { flex: 1 1 auto; min-height: 400px; }
+  /* first screen: demo, title block, and the start of the overview below them */
+  .hero { display: flex; flex-direction: column; min-height: calc(100vh - 200px); min-height: calc(100svh - 200px); }
+  .hero #live { flex: 1 1 auto; min-height: 260px; }
   .hero:has(#live.failed) { min-height: 0; }
   #live-stage { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; outline: none; }
   #live.failed { display: none; }
@@ -127,8 +127,6 @@
                  font-size: 12.5px; line-height: 1.2; color: #c3c8cf; pointer-events: none; }
   #live .hints .ic { display: flex; gap: 3px; justify-content: center; color: #9aa1aa; }
   #live .hints svg { display: block; }
-  #live .hints kbd { font: 11px/1 var(--sans); min-width: 18px; padding: 3px 4px; text-align: center; color: #c3c8cf;
-                     border: 1px solid rgba(255, 255, 255, 0.28); border-bottom-width: 2px; border-radius: 4px; }
   #live-fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
   #live-fx .pull { position: absolute; left: 0; top: 0; font-size: 12px; color: #fff; background: rgba(22, 24, 28, 0.78);
                    padding: 1px 6px; border-radius: 3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -177,7 +175,7 @@
   main h2, main h3 { scroll-margin-top: 24px; }
   /* the rail spans main from the first heading down; the list inside sticks to the top of the window */
   main { position: relative; }
-  .toc-rail { position: absolute; left: -210px; bottom: 0; width: 184px; display: none; }
+  .toc-rail { position: absolute; left: -210px; bottom: 0; width: 184px; display: none; } /* left set by toc.js */
   .toc { position: sticky; top: 44px; max-height: calc(100vh - 88px); overflow-y: auto; }
   .toc .head { font-size: 0.9rem; line-height: 1.3; font-weight: 600; color: var(--fg); margin: 0 0 14px; }
   .toc .head a { color: inherit; }
@@ -193,7 +191,8 @@
                transition: transform 0.25s ease, height 0.25s ease; }
   @media (min-width: 1180px) {
     .toc-rail { display: block; }
-    main { max-width: min(1000px, calc(100vw - 460px)); }
+    /* wide figures stay clear of the sidebar, which sits centered in the left margin */
+    main { max-width: min(1000px, calc(50vw + 158px)); }
   }
 
   /* tables */
@@ -245,7 +244,6 @@
 </section>
 <header class="title">
   <h1>Reduced-Order Soft Bodies for Newton Physics</h1>
-  <p class="sub">A GPU subspace solver for tetrahedral FEM</p>
   <p class="who">Caleb Lowe</p>
   <p class="where">Numerical Linear Algebra, MTH 551 | Fall 2026</p>
   <p class="links"><a href="https://github.com/caleblx/newton-subspace"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Code</a><a href="#results"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 1.75a.75.75 0 0 1 1.5 0v11.5c0 .14.11.25.25.25h11a.75.75 0 0 1 0 1.5h-11A1.75 1.75 0 0 1 1.5 13.25Zm4 6.5a.75.75 0 0 1 1.5 0v3a.75.75 0 0 1-1.5 0Zm3-3.5a.75.75 0 0 1 1.5 0v6.5a.75.75 0 0 1-1.5 0Zm3 1.5a.75.75 0 0 1 1.5 0v5a.75.75 0 0 1-1.5 0Z"/></svg>Results</a><a href="#videos"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 2.6v10.8a.6.6 0 0 0 .9.52l8.9-5.4a.6.6 0 0 0 0-1.04l-8.9-5.4a.6.6 0 0 0-.9.52Z"/></svg>Videos</a></p>
@@ -575,6 +573,28 @@ iteration count on a log-log scale.</p>
 <script type="module" src="demo.js"></script>
 <script type="module" src="viewer.js"></script>
 <script type="module" src="toc.js"></script>
+<script>
+  // size the demo so the first screen ends 2.5 lines into the overview, whatever the window shape.
+  // the CSS calc above is the fallback; this replaces it once the layout is known
+  (() => {
+    const hero = document.querySelector(".hero"), title = document.querySelector(".title");
+    const p = document.querySelector("main .lead p");
+    function fit() {
+      if (document.getElementById("live").classList.contains("failed")) { hero.style.height = hero.style.minHeight = ""; return; }
+      const end = p.getBoundingClientRect().top + scrollY + 2.5 * parseFloat(getComputedStyle(p).lineHeight);
+      const h = hero.offsetHeight + innerHeight - end;
+      hero.style.minHeight = "0";
+      hero.style.height = `${Math.max(h, title.offsetHeight + 260)}px`;
+    }
+    // phones resize the viewport when the url bar slides; there, only refit when the width changes
+    const touch = matchMedia("(pointer: coarse)").matches;
+    let w = innerWidth;
+    addEventListener("resize", () => { if (!touch || innerWidth !== w) { w = innerWidth; fit(); } });
+    new MutationObserver(fit).observe(document.getElementById("live"), { attributes: true, attributeFilter: ["class"] });
+    document.fonts.ready.then(fit);
+    fit();
+  })();
+</script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
   onload="renderMathInElement(document.querySelector('main'), { delimiters: [{ left: '\\[', right: '\\]', display: true }, { left: '\\(', right: '\\)', display: false }] })"></script>

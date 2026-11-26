@@ -340,8 +340,7 @@ function main({ meta, buf, A }) {
     const rows = TOUCH
       ? (i === IMPACTS ? [[fingerIcon, "tap to throw"], [fingerIcon, "drag to rotate"]]
         : [[fingerIcon, `drag the ${NOUN[i === TABLE ? 1 : 0]} to pull`], [fingerIcon, "drag elsewhere to rotate"]])
-      : [i === IMPACTS ? [mouseIcon("L"), "throw"] : [mouseIcon("L"), "pull"], [mouseIcon("R"), "rotate"],
-        ["<kbd>&larr;</kbd><kbd>&rarr;</kbd>", "scene"]];
+      : [i === IMPACTS ? [mouseIcon("L"), "throw"] : [mouseIcon("L"), "pull"], [mouseIcon("R"), "rotate"]];
     el("live-hints").innerHTML = rows.map(([ic, t]) => `<span class="ic">${ic}</span><span>${t}</span>`).join("");
   }
 

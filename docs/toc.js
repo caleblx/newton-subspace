@@ -62,7 +62,13 @@ function inkTop(el) {
   probe.remove();
   return baseline - ascent(el);
 }
-const align = () => { rail.style.top = `${heads[0].offsetTop + inkTop(heads[0]) - inkTop(head)}px`; };
+// centered in the margin between the window's left edge and the text column
+const align = () => {
+  rail.style.top = `${heads[0].offsetTop + inkTop(heads[0]) - inkTop(head)}px`;
+  const textLeft = heads[0].getBoundingClientRect().left, mainLeft = main.getBoundingClientRect().left;
+  rail.style.left = `${(textLeft - rail.offsetWidth) / 2 - mainLeft}px`;
+};
+addEventListener("resize", align);
 new ResizeObserver(align).observe(main);
 document.fonts.ready.then(align);
 align();
